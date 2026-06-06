@@ -1,4 +1,6 @@
 class Organization < ApplicationRecord
+  resourcify
+
   has_many :users, dependent: :restrict_with_error
   has_many :shift_patterns, dependent: :destroy
   has_many :pilot_profiles, through: :users

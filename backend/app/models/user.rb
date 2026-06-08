@@ -1,11 +1,11 @@
 class User < ApplicationRecord
+  include Devise::JWT::RevocationStrategies::JTIMatcher
+
   rolify
 
   devise :database_authenticatable, :registerable,
          :recoverable, :rememberable, :validatable,
          :jwt_authenticatable, jwt_revocation_strategy: self
-
-  include Devise::JWT::RevocationStrategies::JTIMatcher
 
   belongs_to :organization, optional: true
   has_one :pilot_profile, dependent: :destroy

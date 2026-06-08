@@ -9,6 +9,8 @@ Rails.application.routes.draw do
 
   namespace :api do
     namespace :v1 do
+      get "me", to: "me#show"
+
       resources :organizations, only: [:index, :show, :create, :update]
 
       resources :shift_patterns, only: [:index, :show, :create, :update, :destroy]

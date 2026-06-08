@@ -1,85 +1,162 @@
 <script setup lang="ts">
-import { RouterLink, RouterView } from 'vue-router'
-import HelloWorld from './components/HelloWorld.vue'
+import { useAuthStore } from '@/stores/auth'
+import { useRouter } from 'vue-router'
+
+const auth = useAuthStore()
+const router = useRouter()
+
+async function handleSignOut() {
+  await auth.signOut()
+  router.push('/login')
+}
 </script>
 
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
-
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
-
-      <nav>
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/about">About</RouterLink>
+  <div class="app">
+    <header v-if="auth.isAuthenticated" class="app-header">
+      <div class="header-left">
+        <RouterLink to="/shifts" class="logo">RotorShift</RouterLink>
+      </div>
+      <nav class="header-nav">
+        <RouterLink to="/shifts">Shifts</RouterLink>
+        <RouterLink v-if="auth.isPilot" to="/my-schedule">My Schedule</RouterLink>
       </nav>
-    </div>
-  </header>
-
-  <RouterView />
+      <div class="header-right">
+        <span class="user-name">{{ auth.fullName }}</span>
+        <button class="btn-link" @click="handleSignOut">Sign out</button>
+      </div>
+    </header>
+    <main class="app-main">
+      <RouterView />
+    </main>
+  </div>
 </template>
 
-<style scoped>
-header {
-  line-height: 1.5;
-  max-height: 100vh;
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #f5f5f5;
+  color: #1a1a1a;
 }
 
-nav {
-  width: 100%;
-  font-size: 12px;
-  text-align: center;
-  margin-top: 2rem;
+.app-header {
+  background: #1a1a2e;
+  color: white;
+  padding: 0 1.5rem;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  gap: 2rem;
 }
 
-nav a.router-link-exact-active {
-  color: var(--color-text);
+.header-left .logo {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: white;
+  text-decoration: none;
 }
 
-nav a.router-link-exact-active:hover {
-  background-color: transparent;
+.header-nav {
+  display: flex;
+  gap: 1rem;
 }
 
-nav a {
-  display: inline-block;
-  padding: 0 1rem;
-  border-left: 1px solid var(--color-border);
+.header-nav a {
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+  font-size: 0.9rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  transition: all 0.15s;
 }
 
-nav a:first-of-type {
-  border: 0;
+.header-nav a:hover,
+.header-nav a.router-link-active {
+  color: white;
+  background: rgba(255, 255, 255, 0.1);
 }
 
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
+.header-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
 
-  .logo {
-    margin: 0 2rem 0 0;
-  }
+.user-name {
+  font-size: 0.875rem;
+  opacity: 0.8;
+}
 
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
+.btn-link {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  font-size: 0.875rem;
+}
 
-  nav {
-    text-align: left;
-    margin-left: -1rem;
-    font-size: 1rem;
+.btn-link:hover {
+  color: white;
+}
 
-    padding: 1rem 0;
-    margin-top: 1rem;
-  }
+.app-main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-decoration: none;
+}
+
+.btn-primary {
+  background: #4361ee;
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #3651d4;
+}
+
+.btn-success {
+  background: #2ec4b6;
+  color: white;
+}
+
+.btn-success:hover {
+  background: #25a89c;
+}
+
+.btn-secondary {
+  background: #e0e0e0;
+  color: #333;
+}
+
+.btn-secondary:hover {
+  background: #d0d0d0;
+}
+
+.card {
+  background: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 </style>

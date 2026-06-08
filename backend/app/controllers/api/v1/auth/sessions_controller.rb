@@ -21,7 +21,8 @@ class Api::V1::Auth::SessionsController < Devise::SessionsController
       first_name: user.first_name,
       last_name: user.last_name,
       organization_id: user.organization_id,
-      roles: user.roles.pluck(:name)
+      roles: user.roles.pluck(:name),
+      pilot_profile: user.pilot_profile&.as_json(only: [:id, :license_number, :active])
     }
   end
 end

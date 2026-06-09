@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_05_233452) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_08_101239) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -75,14 +75,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_05_233452) do
 
   create_table "schedules", force: :cascade do |t|
     t.datetime "created_at", null: false
+    t.text "description"
     t.integer "month", null: false
+    t.string "name"
     t.bigint "organization_id", null: false
     t.datetime "published_at"
     t.bigint "published_by_id"
     t.integer "status", default: 0, null: false
     t.datetime "updated_at", null: false
     t.integer "year", null: false
-    t.index ["organization_id", "year", "month"], name: "index_schedules_on_organization_id_and_year_and_month", unique: true
+    t.index ["organization_id", "year", "month"], name: "index_schedules_unique_published_per_month", unique: true, where: "(status = 1)"
     t.index ["organization_id"], name: "index_schedules_on_organization_id"
     t.index ["published_by_id"], name: "index_schedules_on_published_by_id"
   end

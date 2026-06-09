@@ -39,6 +39,8 @@ onMounted(() => store.fetchSchedules())
         class="schedule-card card"
       >
         <div class="schedule-month">{{ monthNames[s.month] }} {{ s.year }}</div>
+        <div v-if="s.name" class="schedule-name">{{ s.name }}</div>
+        <div v-if="s.description" class="schedule-desc">{{ s.description }}</div>
         <div class="schedule-meta">
           <span :class="['status-badge', statusClass(s.status)]">{{ statusLabel(s.status) }}</span>
           <span v-if="s.published_by" class="published-by">by {{ s.published_by }}</span>
@@ -87,7 +89,21 @@ h2 {
 .schedule-month {
   font-size: 1.2rem;
   font-weight: 600;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.25rem;
+}
+
+.schedule-name {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #444;
+  margin-bottom: 0.15rem;
+}
+
+.schedule-desc {
+  font-size: 0.8rem;
+  color: #888;
+  margin-bottom: 0.5rem;
+  line-height: 1.3;
 }
 
 .schedule-meta {

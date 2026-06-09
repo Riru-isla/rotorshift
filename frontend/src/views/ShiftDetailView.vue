@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useSchedulesStore, type ScheduleEntry } from '@/stores/schedules'
 
@@ -103,8 +103,49 @@ async function cycleEntryType(entry: ScheduleEntry | undefined) {
   await store.updateEntry(scheduleId.value, entry.id, nextType)
 }
 
+const actionError = ref('')
+
+const canUnpublish = computed(() => {
+  const s = store.currentSchedule
+  if (!s || s.status !== 'published') return false
+  const now = new Date()
+  const currentYear = now.getFullYear()
+  const currentMonth = now.getMonth() + 1
+  if (s.year > currentYear) return true
+  if (s.year === currentYear && s.month > currentMonth) return true
+  return false
+})
+
 async function handlePublish() {
-  await store.publishSchedule(scheduleId.value)
+  actionError.value = ''
+  try {
+    await store.publishSchedule(scheduleId.value)
+  } catch (e: any) {
+    actionError.value = e.response?.data?.errors?.join(', ') || 'Failed to publish roster'
+  }
+}
+
+async function handleUnpublish() {
+  if (!confirm('Unpublish this roster? It will revert to draft.')) return
+  actionError.value = ''
+  try {
+    await store.unpublishSchedule(scheduleId.value)
+  } catch (e: any) {
+    actionError.value = e.response?.data?.errors?.join(', ') || 'Failed to unpublish roster'
+  }
+}
+
+const deleting = ref(false)
+
+async function handleDelete() {
+  if (!confirm('Delete this draft roster? This cannot be undone.')) return
+  deleting.value = true
+  try {
+    await store.deleteSchedule(scheduleId.value)
+    router.push('/shifts')
+  } finally {
+    deleting.value = false
+  }
 }
 
 onMounted(() => store.fetchSchedule(scheduleId.value))
@@ -116,13 +157,32 @@ onMounted(() => store.fetchSchedule(scheduleId.value))
   <div v-else-if="store.currentSchedule">
     <div class="page-header">
       <div>
-        <h2>{{ monthNames[store.currentSchedule.month] }} {{ store.currentSchedule.year }}</h2>
+        <h2>
+          {{ monthNames[store.currentSchedule.month] }} {{ store.currentSchedule.year }}
+          <span v-if="store.currentSchedule.name" class="roster-name">— {{ store.currentSchedule.name }}</span>
+        </h2>
+        <p v-if="store.currentSchedule.description" class="roster-desc">{{ store.currentSchedule.description }}</p>
         <span :class="['status-badge', `status-${store.currentSchedule.status}`]">
           {{ store.currentSchedule.status }}
         </span>
       </div>
       <div class="header-actions">
         <RouterLink to="/shifts" class="btn btn-secondary">Back</RouterLink>
+        <button
+          v-if="store.currentSchedule.status === 'draft'"
+          class="btn btn-danger"
+          :disabled="deleting"
+          @click="handleDelete"
+        >
+          {{ deleting ? 'Deleting...' : 'Delete Draft' }}
+        </button>
+        <button
+          v-if="canUnpublish"
+          class="btn btn-warning"
+          @click="handleUnpublish"
+        >
+          Unpublish
+        </button>
         <button
           v-if="store.currentSchedule.status === 'draft'"
           class="btn btn-success"
@@ -132,6 +192,8 @@ onMounted(() => store.fetchSchedule(scheduleId.value))
         </button>
       </div>
     </div>
+
+    <div v-if="actionError" class="action-error">{{ actionError }}</div>
 
     <div class="legend">
       <span v-for="t in entryTypes" :key="t" class="legend-item">
@@ -228,6 +290,18 @@ onMounted(() => store.fetchSchedule(scheduleId.value))
   text-transform: uppercase;
 }
 
+.roster-name {
+  font-size: 1rem;
+  font-weight: 400;
+  color: #666;
+}
+
+.roster-desc {
+  font-size: 0.85rem;
+  color: #888;
+  margin: 0.15rem 0 0.35rem;
+}
+
 .status-draft {
   background: #fff3cd;
   color: #856404;
@@ -236,6 +310,15 @@ onMounted(() => store.fetchSchedule(scheduleId.value))
 .status-published {
   background: #d4edda;
   color: #155724;
+}
+
+.action-error {
+  background: #fee;
+  color: #c00;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
 }
 
 .legend {

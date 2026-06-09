@@ -18,6 +18,8 @@ export interface ScheduleEntry {
 
 export interface Schedule {
   id: number
+  name: string | null
+  description: string | null
   year: number
   month: number
   status: string
@@ -59,20 +61,24 @@ export const useSchedulesStore = defineStore('schedules', () => {
     }
   }
 
-  async function createSchedule(
-    year: number,
-    month: number,
-    minimumActive: number,
-    minimumOnHold: number,
-  ) {
+  async function createSchedule(params: {
+    year: number
+    month: number
+    name?: string
+    description?: string
+    minimumActive: number
+    minimumOnHold: number
+  }) {
     loading.value = true
     try {
       const { data } = await api.post('/api/v1/schedules', {
-        year,
-        month,
+        year: params.year,
+        month: params.month,
+        name: params.name,
+        description: params.description,
         auto_generate: true,
-        minimum_active: minimumActive,
-        minimum_on_hold: minimumOnHold,
+        minimum_active: params.minimumActive,
+        minimum_on_hold: params.minimumOnHold,
       })
       currentSchedule.value = data.schedule
       entries.value = data.entries
@@ -80,6 +86,11 @@ export const useSchedulesStore = defineStore('schedules', () => {
     } finally {
       loading.value = false
     }
+  }
+
+  async function deleteSchedule(id: number) {
+    await api.delete(`/api/v1/schedules/${id}`)
+    schedules.value = schedules.value.filter((s) => s.id !== id)
   }
 
   async function updateEntry(scheduleId: number, entryId: number, entryType: string) {
@@ -93,6 +104,11 @@ export const useSchedulesStore = defineStore('schedules', () => {
 
   async function publishSchedule(id: number) {
     const { data } = await api.patch(`/api/v1/schedules/${id}/publish`)
+    currentSchedule.value = data.schedule
+  }
+
+  async function unpublishSchedule(id: number) {
+    const { data } = await api.patch(`/api/v1/schedules/${id}/unpublish`)
     currentSchedule.value = data.schedule
   }
 
@@ -110,8 +126,10 @@ export const useSchedulesStore = defineStore('schedules', () => {
     fetchSchedules,
     fetchSchedule,
     createSchedule,
+    deleteSchedule,
     updateEntry,
     publishSchedule,
+    unpublishSchedule,
     fetchPilots,
   }
 })

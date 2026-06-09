@@ -7,6 +7,8 @@ const store = useSchedulesStore()
 const router = useRouter()
 
 const now = new Date()
+const name = ref('')
+const description = ref('')
 const year = ref(now.getFullYear())
 const month = ref(now.getMonth() + 1)
 const minimumActive = ref(5)
@@ -31,12 +33,14 @@ const monthOptions = [
 async function handleCreate() {
   error.value = ''
   try {
-    const schedule = await store.createSchedule(
-      year.value,
-      month.value,
-      minimumActive.value,
-      minimumOnHold.value,
-    )
+    const schedule = await store.createSchedule({
+      year: year.value,
+      month: month.value,
+      name: name.value || undefined,
+      description: description.value || undefined,
+      minimumActive: minimumActive.value,
+      minimumOnHold: minimumOnHold.value,
+    })
     router.push(`/shifts/${schedule.id}`)
   } catch (e: any) {
     error.value = e.response?.data?.errors?.join(', ') || 'Failed to create roster'
@@ -52,6 +56,21 @@ async function handleCreate() {
 
     <div class="card form-card">
       <form @submit.prevent="handleCreate">
+        <div class="form-row single">
+          <div class="field">
+            <label for="name">Roster Name</label>
+            <input id="name" v-model="name" type="text" placeholder="e.g. July Draft, Summer Plan B" />
+            <span class="hint">Optional — helps distinguish multiple drafts for the same month</span>
+          </div>
+        </div>
+
+        <div class="form-row single">
+          <div class="field">
+            <label for="description">Description</label>
+            <textarea id="description" v-model="description" rows="2" placeholder="Notes about this roster..."></textarea>
+          </div>
+        </div>
+
         <div class="form-row">
           <div class="field">
             <label for="month">Month</label>
@@ -113,8 +132,13 @@ async function handleCreate() {
   letter-spacing: 0.03em;
 }
 
+.form-row.single {
+  grid-template-columns: 1fr;
+}
+
 .field input,
-.field select {
+.field select,
+.field textarea {
   width: 100%;
   padding: 0.6rem 0.75rem;
   border: 1px solid #ddd;
@@ -122,8 +146,14 @@ async function handleCreate() {
   font-size: 0.95rem;
 }
 
+.field textarea {
+  resize: vertical;
+  font-family: inherit;
+}
+
 .field input:focus,
-.field select:focus {
+.field select:focus,
+.field textarea:focus {
   outline: none;
   border-color: #4361ee;
   box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);

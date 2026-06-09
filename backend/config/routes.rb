@@ -27,9 +27,10 @@ Rails.application.routes.draw do
         end
       end
 
-      resources :schedules, only: [:index, :show, :create, :update] do
+      resources :schedules, only: [:index, :show, :create, :update, :destroy] do
         member do
           patch :publish
+          patch :unpublish
         end
         resources :schedule_entries, only: [:index, :create, :update, :destroy]
       end

@@ -8,5 +8,7 @@ class Schedule < ApplicationRecord
 
   validates :year, presence: true, numericality: { greater_than: 2000 }
   validates :month, presence: true, inclusion: { in: 1..12 }
-  validates :year, uniqueness: { scope: [:organization_id, :month] }
+  validates :year, uniqueness: { scope: [:organization_id, :month], conditions: -> { where(status: :published) },
+                                 message: "already has a published schedule for this month" },
+            if: :published?
 end

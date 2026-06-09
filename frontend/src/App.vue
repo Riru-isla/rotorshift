@@ -19,6 +19,7 @@ async function handleSignOut() {
       </div>
       <nav class="header-nav">
         <RouterLink to="/shifts">Shifts</RouterLink>
+        <RouterLink to="/pilots">Pilots</RouterLink>
         <RouterLink v-if="auth.isPilot" to="/my-schedule">My Schedule</RouterLink>
       </nav>
       <div class="header-right">
@@ -142,6 +143,24 @@ body {
 
 .btn-success:hover {
   background: #25a89c;
+}
+
+.btn-danger {
+  background: #dc3545;
+  color: white;
+}
+
+.btn-danger:hover {
+  background: #c82333;
+}
+
+.btn-warning {
+  background: #ffc107;
+  color: #333;
+}
+
+.btn-warning:hover {
+  background: #e0a800;
 }
 
 .btn-secondary {
